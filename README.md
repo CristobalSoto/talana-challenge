@@ -1,0 +1,49 @@
+## Introduction
+
+This README outlines the steps required to set up and run this project on a local machine. It provides a systematic approach to ensure the project is correctly configured for development and execution.
+
+## Prerequisites
+
+Ensure you have the following installed:
+
+- Python 3.8 or higher
+- pip (Python package manager)
+
+## Setup Instructions
+
+### Step 1: Create a Virtual Environment
+
+To isolate and manage dependencies, create a virtual environment in your project directory:
+python -m venv venv
+
+### Step 2: Activate the Virtual Environment
+
+Activate the virtual environment with the following command:
+
+On Windows:
+
+```cmd
+.\venv\Scripts\activate
+```
+
+On macOS and Linux:
+
+```bash
+source venv/bin/activate
+```
+
+### Step 3: Install Dependencies
+
+With the virtual environment activated, install the required dependencies:
+
+```python
+pip install -r requirements.txt
+```
+
+### Step 5: Run the Project
+
+Finally, run the project from the root directory:
+
+```python
+python run.py
+```

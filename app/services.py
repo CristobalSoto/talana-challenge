@@ -1,67 +1,68 @@
-from .models import Employee, Task
-from . import db  # Import the db object here
-from datetime import datetime
-from flask import jsonify
+import logging
+from sqlalchemy.exc import SQLAlchemyError
+from .models import db, Employee, Task
 from sqlalchemy.orm import joinedload
+from datetime import datetime
 
-def assign_tasks(date):
-    tasks = Task.query.filter_by(assigned=False, due_date=date).all()
-    employees = Employee.query.all()
+# Setting up basic logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-    employee_skills = get_employees_skills(employees)
+def assign_tasks(assignment_date):
+    # Convert string date to datetime.date object if needed
+    if isinstance(assignment_date, str):
+        assignment_date = datetime.strptime(assignment_date, "%Y-%m-%d").date()
 
-    for task in tasks:
-        if task.required_skills[0] in employee_skills:
-            common_employees = set(employee_skills[task.required_skills[0]])
-        else:
-            break
-        for skill in task.required_skills[1:]:
-            common_employees.intersection_update(employee_skills[skill])
+    try:
+        tasks = Task.query.options(joinedload(Task.required_skills), joinedload(Task.employee)).filter_by(assigned=False, due_date=assignment_date).all()
+        employees = Employee.query.options(joinedload(Employee.skills), joinedload(Employee.available_days)).all()
 
-        suitable_employees_skills = list(common_employees)
-        if suitable_employees_skills:
-            for employee in suitable_employees_skills:
-                if is_employee_available(employee, task):
-                    assign_task_to_employee(task, employee)
-                    break
+        for task in tasks:
+            suitable_employees = find_suitable_employees(task, employees)
+            if suitable_employees:
+                assign_task_to_employee(task, suitable_employees[0])
+
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.error(f"Error assigning tasks: {e}")
+        raise
 
     db.session.commit()
 
-def is_employee_available(employee, task):
-    task_day = task.due_date.strftime("%A")
-    is_available = task_day in employee.available_days and employee.availability_hours >= task.duration
-    return is_available
-
-def get_employees_skills(employees):
-    employee_skills = {}
+def find_suitable_employees(task, employees):
+    suitable_employees = []
     for employee in employees:
-        for skill in employee.skills:
-            if skill in employee_skills:
-                employee_skills[skill].append(employee)
-            else:
-                employee_skills[skill] = [employee]
-
-    return employee_skills
+        if all(skill in employee.skills for skill in task.required_skills) and is_employee_available(employee, task):
+            suitable_employees.append(employee)
+    return suitable_employees
 
 def assign_task_to_employee(task, employee):
     employee.availability_hours -= task.duration
     task.assigned = True
     task.assigned_to = employee.id
 
-def generate_assignment_report(date):
-    tasks = Task.query.options(joinedload(Task.employee)).filter_by(due_date=date).all()
+def is_employee_available(employee, task):
+    return task.due_date.strftime("%A") in [day.day for day in employee.available_days] and employee.availability_hours >= task.duration
 
-    report = []
-    for task in tasks:
-        report.append({
-            'task_title': task.title,
-            'employee_name': task.employee.name if task.employee else None,
-            'task_duration': task.duration,
-            'employee_hours_remaining': task.employee.availability_hours if task.employee else None,
-            'skills_required': task.required_skills,
-            'employee_skills': task.employee.skills if task.employee else None
-        })
+def generate_assignment_report(report_date):
+    # Convert string date to datetime.date object if needed
+    if isinstance(report_date, str):
+        report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
 
-    return jsonify(report)
-
-
+    try:
+        tasks = Task.query.options(joinedload(Task.employee)).filter_by(due_date=report_date).all()
+        report = []
+        for task in tasks:
+            report.append({
+                'task_title': task.title,
+                'employee_name': task.employee.name if task.employee else None,
+                'task_duration': task.duration,
+                'employee_hours_remaining': task.employee.availability_hours if task.employee else None,
+                'skills_required': [skill.name for skill in task.required_skills],
+                'employee_skills': [skill.name for skill in task.employee.skills] if task.employee else None
+            })
+        return report
+    except SQLAlchemyError as e:
+        logger.error(f"Error generating report: {e}")
+        raise
