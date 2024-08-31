@@ -1,7 +1,9 @@
+from datetime import datetime
 from flask import Blueprint, request, jsonify
 from . import db
 from .services import assign_tasks, generate_assignment_report
 from .models import Employee, Task
+from sqlalchemy.orm import joinedload
 
 main = Blueprint('main', __name__)
 
@@ -39,13 +41,30 @@ def add_task():
 
 @main.route('/tasks', methods=['GET'])
 def get_tasks():
-    tasks = Task.query.all()
-    task_list = [{'title': t.title, 'due_date': t.due_date, 'duration': t.duration, 'required_skills': t.required_skills} for t in tasks]
+    tasks = Task.query.options(joinedload(Task.employee)).all()
+    task_list = [
+        {
+            'title': t.title,
+            'due_date': t.due_date,
+            'duration': t.duration,
+            'assigned': t.assigned,
+            'assigned_to': t.employee.name if t.employee else "Unassigned",
+            'required_skills': t.required_skills
+        } for t in tasks
+    ]
     return jsonify(task_list)
 
 @main.route('/assign_tasks', methods=['POST'])
 def api_assign_tasks():
-    assign_tasks()
+    data = request.get_json()
+    date_str = data['date']
+    try:
+        # Parse the date string into a datetime.date object
+        task_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError as error:
+        # Handle the error if the date format is incorrect
+        return jsonify({"error": "Invalid date format, please use YYYY-MM-DD"}), 400
+    assign_tasks(task_date)
     return jsonify({'message': 'Tasks assigned successfully'}), 200
 
 @main.route('/report_assignments', methods=['GET'])

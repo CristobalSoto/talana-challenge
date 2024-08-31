@@ -37,7 +37,7 @@ class TestTaskAssignment(BaseTestCase):
         db.session.add(task)
         db.session.commit()
 
-        assign_tasks()
+        assign_tasks("2023-08-28")
         db.session.refresh(task)
         self.assertTrue(task.assigned)
         self.assertEqual(task.assigned_to, employee.id)
@@ -60,8 +60,8 @@ class TestTaskAssignment(BaseTestCase):
         )
         db.session.add(task)
         db.session.commit()
-
-        assign_tasks()
+        assign_tasks("2023-09-01")
+        
         db.session.refresh(task)
         self.assertFalse(task.assigned)
 
@@ -85,6 +85,6 @@ class TestTaskAssignment(BaseTestCase):
         db.session.add(task)
         db.session.commit()
 
-        assign_tasks()
+        assign_tasks("2023-09-01")
         db.session.refresh(task)
         self.assertFalse(task.assigned)

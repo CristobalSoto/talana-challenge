@@ -25,7 +25,7 @@ class TestReport(BaseTestCase):
         db.session.add(task)
         db.session.commit()
 
-        assign_tasks()  # Assign tasks to employees
+        assign_tasks("2023-08-28")  # Assign tasks to employees
 
         # Now request the report
         with self.client:
