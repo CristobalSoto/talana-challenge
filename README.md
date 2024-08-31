@@ -57,11 +57,14 @@ Finally, run the project from the root directory:
 python run.py
 ```
 
-## Disclaimer
+## Additional information
 
 The use of a migration tool like Alembic was not deemed necessary due to the small amount of data
 so the migration I used is to create sample data for testing purposes in the seed_data.py
 this file deletes the database and create a new one.
+
+the services_legacy.py file has the previous iteration of the solution, at the begining the skills and available values were 
+stored in a column as a list so the solution may not work as before but the logic is there.
 
 
 
