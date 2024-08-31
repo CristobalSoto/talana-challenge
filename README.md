@@ -40,6 +40,15 @@ With the virtual environment activated, install the required dependencies:
 pip install -r requirements.txt
 ```
 
+### Step 4: Create database
+
+Run the creation of the database (this will create the tables and some sample data)
+
+```python
+python seed_data.py
+```
+
+
 ### Step 5: Run the Project
 
 Finally, run the project from the root directory:
@@ -47,3 +56,12 @@ Finally, run the project from the root directory:
 ```python
 python run.py
 ```
+
+## Disclaimer
+
+The use of a migration tool like Alembic was not deemed necessary due to the small amount of data
+so the migration I used is to create sample data for testing purposes in the seed_data.py
+this file deletes the database and create a new one.
+
+
+
