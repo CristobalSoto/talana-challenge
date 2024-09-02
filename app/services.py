@@ -4,7 +4,6 @@ from .models import db, Employee, Task
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 
-# Setting up basic logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

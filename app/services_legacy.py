@@ -10,7 +10,6 @@ Historic changes of assign task
 class AssignTaskV3:
 
     def __init__(self):
-        # This is the constructor method
         print("Initializing the assign task version 3")
 
     def assign_tasks(self, date):
@@ -61,7 +60,6 @@ class AssignTaskV3:
 class AssignTaskV2:
 
     def __init__(self):
-        # This is the constructor method
         print("Initializing the assign task version 2")
     
     def assign_tasks(self):
