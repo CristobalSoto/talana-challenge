@@ -56,6 +56,11 @@ Finally, run the project from the root directory:
 ```python
 python run.py
 ```
+### Run test:
+
+```bash
+python -m unittest discover -s tests
+```
 
 ## Additional information
 
